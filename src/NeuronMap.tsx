@@ -23,6 +23,7 @@ function homeDistance() {
 const SPOT_DIR = new THREE.Vector3(0.5, 0.35, 1).normalize();
 const COLOR = { answer: "#3fcf6e", wrong: "#ff6166", hover: "#7fd4ff" };
 const ORIGIN = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3()]);
+const ARROWS = new Set(["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"]);
 
 type Cell = { layer: number; row: number; col: number };
 type Hover = Pin & { up: string; down: string };
@@ -170,6 +171,28 @@ function Rig({ fly }: { fly: Fly }) {
   return null;
 }
 
+/** Arrow keys pan the view while held; the step scales with how far the camera is from the map. */
+function Pan({ held }: { held: RefObject<Set<string>> }) {
+  const { camera } = useThree();
+  const controls = useThree((s) => s.controls) as unknown as Controls | null;
+  const right = useMemo(() => new THREE.Vector3(), []);
+  const up = useMemo(() => new THREE.Vector3(), []);
+  useFrame(() => {
+    const keys = held.current;
+    const x = (keys.has("ArrowRight") ? 1 : 0) - (keys.has("ArrowLeft") ? 1 : 0);
+    const y = (keys.has("ArrowUp") ? 1 : 0) - (keys.has("ArrowDown") ? 1 : 0);
+    if (!controls || (x === 0 && y === 0)) return;
+    const step = camera.position.distanceTo(controls.target) * 0.007;
+    right.setFromMatrixColumn(camera.matrixWorld, 0);
+    up.setFromMatrixColumn(camera.matrixWorld, 1);
+    const move = right.multiplyScalar(x * step).add(up.multiplyScalar(y * step));
+    controls.target.add(move);
+    camera.position.add(move);
+    controls.update();
+  });
+  return null;
+}
+
 /** Moves the layer-name buttons (plain DOM over the canvas) to their sheets every frame. */
 function LabelProjector({ labels, focus }: { labels: RefObject<(HTMLButtonElement | null)[]>; focus: number | null }) {
   const { camera, size } = useThree();
@@ -255,6 +278,7 @@ export function NeuronMap({ geo, round, pinnable, numbers, pin, onPin, locked, h
   const wrap = useRef<HTMLDivElement>(null);
   const tip = useRef<HTMLDivElement>(null);
   const labels = useRef<(HTMLButtonElement | null)[]>([]);
+  const held = useRef(new Set<string>());
   const markEls = useRef(new Map<string, HTMLElement>());
   const seen = useRef(new Set<string>());
   const center = useMemo(() => new THREE.Vector3(((geo.layers - 1) * GAP) / 2, SHEET / 2, 0), [geo]);
@@ -345,8 +369,9 @@ export function NeuronMap({ geo, round, pinnable, numbers, pin, onPin, locked, h
   };
 
   const onKeyDown = (e: KeyboardEvent) => {
-    if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
-      const step = e.key === "ArrowRight" ? 1 : -1;
+    if (ARROWS.has(e.key)) held.current.add(e.key);
+    else if (e.key === "[" || e.key === "]") {
+      const step = e.key === "]" ? 1 : -1;
       focusLayer(focus === null ? (step > 0 ? 0 : geo.layers - 1) : Math.min(geo.layers - 1, Math.max(0, focus + step)));
     } else if (e.key === "Escape") focusLayer(null);
     else if (e.key === "Enter") onLock();
@@ -357,7 +382,7 @@ export function NeuronMap({ geo, round, pinnable, numbers, pin, onPin, locked, h
   const pinPos = useMemo(() => (pin ? cellPos(side, pin) : null), [pin, side]);
   const hitPos = useMemo(() => (hit ? cellPos(side, hit) : null), [hit, side]);
   return (
-    <div ref={wrap} className="mapwrap" tabIndex={0} onKeyDown={onKeyDown} aria-label="Map of Qwen3.5-4B, 32 layers of 9,216 neurons">
+    <div ref={wrap} className="mapwrap" tabIndex={0} onKeyDown={onKeyDown} onKeyUp={(e) => held.current.delete(e.key)} onBlur={() => held.current.clear()} aria-label="Map of Qwen3.5-4B, 32 layers of 9,216 neurons">
       <Canvas dpr={[1, 2]} camera={{ fov: 32, near: 0.05, far: 1000, position: home.target.clone().add(home.offset) }}>
         <color attach="background" args={["#000000"]} />
         {Array.from({ length: geo.layers }, (_, l) => (
@@ -379,6 +404,7 @@ export function NeuronMap({ geo, round, pinnable, numbers, pin, onPin, locked, h
         />
         <OrbitControls makeDefault enableDamping dampingFactor={0.12} zoomSpeed={0.7} minDistance={1.2} maxDistance={220} />
         <Rig fly={fly} />
+        <Pan held={held} />
       </Canvas>
       <div className="labels">
         {Array.from({ length: geo.layers }, (_, l) => (
@@ -422,7 +448,7 @@ export function NeuronMap({ geo, round, pinnable, numbers, pin, onPin, locked, h
           ) : pinInfo ? (
             `pin: L${pinInfo.layer}${numbers ? ` · N${pinInfo.neuron}` : ""}  (${pinInfo.up})`
           ) : (
-            <span className="dim hint">hover: what a neuron pushes{pinnable ? " · click: pin" : ""} · drag: orbit · scroll: zoom · L0–L31: face a layer</span>
+            <span className="dim hint">hover: what a neuron pushes{pinnable ? " · click: pin" : ""} · drag: orbit · scroll: zoom · arrows: move · [ ]: layers</span>
           )}
         </span>
         <button type="button" onClick={() => focusLayer(null)}>all layers</button>
