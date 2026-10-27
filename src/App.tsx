@@ -1,3 +1,4 @@
+import { Analytics } from "@vercel/analytics/react";
 import { useEffect, useState } from "react";
 import { loadPuzzles, type PuzzleData } from "./data";
 import { Game } from "./Game";
@@ -60,6 +61,7 @@ export default function App() {
       <Terminal term={term} />
       {error && <div className="bad">could not load the puzzles: {error}</div>}
       {data && <Game data={data} term={term} easy={easy} />}
+      <Analytics />
     </main>
   );
 }
