@@ -4,3 +4,4 @@ dist
 
 # local dev tooling
 .claude/
+.vercel
