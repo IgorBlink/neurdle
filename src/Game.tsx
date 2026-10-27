@@ -4,7 +4,7 @@ import { TRIES, choicesFor, geoScore, labelPoints, neuronLabel, optionText, pad,
 import { NeuronMap, type Mark } from "./NeuronMap";
 import type { MenuItem, TerminalApi } from "./terminal";
 
-type MapView = { round: number; easy: boolean; named: boolean; pin: Pin | null; locked: boolean; hit: GeoHit | null; marks: Mark[] };
+type MapView = { round: number; easy: boolean; over: boolean; pin: Pin | null; locked: boolean; hit: GeoHit | null; marks: Mark[] };
 
 /**
  * One puzzle, four options, two tries (5000 points first try, 2500 second). The default mode offers recipes such as
@@ -61,7 +61,7 @@ export function Game({ data, term, easy }: { data: PuzzleData; term: TerminalApi
       // options stay off the map; a wrong guess shows where it lives, the answer shows once the puzzle is over
       const marks: Mark[] = s.wrong.map((q) => ({ key: `wrong ${q.id}`, kind: "wrong", title: s.easy ? `✗ ${q.label}` : "✗ wrong guess", puzzle: q }));
       if (finished()) marks.push({ key: "answer", kind: "answer", title: `${s.won ? "✓ " : "it was: "}${p.label}`, puzzle: p });
-      setView({ round: s.round, easy: s.easy, named: s.named, pin: s.pin, locked: s.locked || s.skipped, hit: finished() ? s.hit : null, marks });
+      setView({ round: s.round, easy: s.easy, over: finished(), pin: s.pin, locked: s.locked || s.skipped, hit: finished() ? s.hit : null, marks });
     }
     /** Clears the terminal and draws the puzzle in its current state. */
     function screen() {
@@ -81,7 +81,7 @@ export function Game({ data, term, easy }: { data: PuzzleData; term: TerminalApi
         print(p.hintQ, "q");
         printMd(p.hint, "reply");
       }
-      if (s.locked && !finished()) print(`map pin locked on L${s.pin!.layer} ${neuronLabel(s.pin!.neuron, s.named)}; its score shows once you pick the neurons`, "dim echo");
+      if (s.locked && !finished()) print(`map pin locked on L${s.pin!.layer} ${neuronLabel(s.pin!.neuron, false)}; its score shows once you pick the neurons`, "dim echo");
       if (finished()) return summary();
       if (!s.named) {
         const items: MenuItem[] = s.choices.filter((q) => !s.wrong.includes(q)).map((q) => ({ label: option(q), run: () => guess(q) }));
@@ -164,7 +164,7 @@ export function Game({ data, term, easy }: { data: PuzzleData; term: TerminalApi
           geo={geo}
           round={view.round}
           pinnable={!view.easy}
-          numbers={view.named}
+          numbers={view.over}
           pin={view.pin}
           locked={view.locked}
           hit={view.hit}

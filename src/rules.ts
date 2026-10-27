@@ -39,7 +39,7 @@ export function doseOf(p: Puzzle, layer: number, neuron: number): string {
   return p.recipe.match(new RegExp(`L${layer}N${neuron}([+-][\\d.]+)`))?.[1] ?? "";
 }
 
-/** A neuron's number once the puzzle is named; before that, just its first digit, so the map cannot be searched by option. */
+/** A neuron's number once the puzzle is over; before that, just its first digit, so the map cannot be searched by number. */
 export function neuronLabel(n: number, shown: boolean): string {
   return shown ? `N${n}` : `N${String(n)[0]}…`;
 }

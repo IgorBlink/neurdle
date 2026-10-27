@@ -253,7 +253,7 @@ type Props = {
   round: number;
   /** clicks drop a pin; off, the map is only for looking */
   pinnable: boolean;
-  /** neuron numbers show only once the puzzle has been named, so the map cannot be searched by option */
+  /** full neuron numbers show only once the puzzle is over, so the pin cannot be placed by searching for a number */
   numbers: boolean;
   pin: Pin | null;
   onPin: (p: Pin) => void;
