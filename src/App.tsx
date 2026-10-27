@@ -57,6 +57,12 @@ export default function App() {
             neuron-explorer
           </a>
         </div>
+        <div className="dim">
+          source:{" "}
+          <a href="https://github.com/IgorBlink/neurdle" target="_blank" rel="noopener">
+            github.com/IgorBlink/neurdle
+          </a>
+        </div>
       </header>
       <Terminal term={term} />
       {error && <div className="bad">could not load the puzzles: {error}</div>}
