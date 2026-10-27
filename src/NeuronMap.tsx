@@ -3,7 +3,7 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { memo, useEffect, useMemo, useRef, useState, type KeyboardEvent, type RefObject } from "react";
 import * as THREE from "three";
 import type { GeoData, Puzzle } from "./data";
-import { doseOf, targetsFor, type GeoHit, type Pin } from "./rules";
+import { doseOf, neuronLabel, targetsFor, type GeoHit, type Pin } from "./rules";
 
 // Layers run along x, each a vertical sheet of side x side neurons placed by what they write (neuron-explorer's layout).
 const GAP = 1.9;
@@ -311,10 +311,10 @@ export function NeuronMap({ geo, round, pinnable, numbers, pin, onPin, locked, h
         const dose = doseOf(m.puzzle, layer, neuron);
         out.push({
           key: `${m.key} ${i}`, kind: m.kind, pos: cellPos(side, { layer, row, col }), title: i ? undefined : m.title,
-          text: neuron < 0 ? `L${layer} whole-layer vector ${dose}` : `L${layer}${numbers ? ` N${neuron}` : ""} ${dose}  ↑ ${up}`,
+          text: neuron < 0 ? `L${layer} whole-layer vector ${dose}` : `L${layer} ${neuronLabel(neuron, numbers)} ${dose}  ↑ ${up}`,
         });
       });
-    if (pin) out.push({ key: `pin ${pin.layer} ${pin.row} ${pin.col}`, kind: "pin", pos: cellPos(side, pin), text: `pin L${pin.layer}${numbers ? ` N${pin.neuron}` : ""}` });
+    if (pin) out.push({ key: `pin ${pin.layer} ${pin.row} ${pin.col}`, kind: "pin", pos: cellPos(side, pin), text: `pin L${pin.layer} ${neuronLabel(pin.neuron, numbers)}` });
     return out;
   }, [marks, pin, geo, side, numbers]);
 
@@ -434,7 +434,7 @@ export function NeuronMap({ geo, round, pinnable, numbers, pin, onPin, locked, h
       <div ref={tip} className="tip" hidden={!hover}>
         {hover && (
           <>
-            <b>{numbers ? `L${hover.layer} · N${hover.neuron}` : `L${hover.layer}`}</b>
+            <b>{`L${hover.layer} · ${neuronLabel(hover.neuron, numbers)}`}</b>
             {`\npushes up    ${hover.up}\npushes down  ${hover.down}`}
           </>
         )}
@@ -444,9 +444,9 @@ export function NeuronMap({ geo, round, pinnable, numbers, pin, onPin, locked, h
           {hit ? (
             `map ${hit.score} / 5000`
           ) : locked && pin ? (
-            `pin locked on L${pin.layer}${numbers ? ` N${pin.neuron}` : ""} · pick the neurons above to see where they really are`
+            `pin locked on L${pin.layer} ${neuronLabel(pin.neuron, numbers)} · pick the neurons above to see where they really are`
           ) : pinInfo ? (
-            `pin: L${pinInfo.layer}${numbers ? ` · N${pinInfo.neuron}` : ""}  (${pinInfo.up})`
+            `pin: L${pinInfo.layer} · ${neuronLabel(pinInfo.neuron, numbers)}  (${pinInfo.up})`
           ) : (
             <span className="dim hint">hover: what a neuron pushes{pinnable ? " · click: pin" : ""} · drag: orbit · scroll: zoom · arrows: move · [ ]: layers</span>
           )}

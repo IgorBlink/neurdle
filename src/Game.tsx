@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { loadGeo, type GeoData, type Puzzle, type PuzzleData } from "./data";
-import { TRIES, choicesFor, geoScore, labelPoints, optionText, pad, targetsFor, where, type GeoHit, type Pin } from "./rules";
+import { TRIES, choicesFor, geoScore, labelPoints, neuronLabel, optionText, pad, targetsFor, where, type GeoHit, type Pin } from "./rules";
 import { NeuronMap, type Mark } from "./NeuronMap";
 import type { MenuItem, TerminalApi } from "./terminal";
 
@@ -81,7 +81,7 @@ export function Game({ data, term, easy }: { data: PuzzleData; term: TerminalApi
         print(p.hintQ, "q");
         printMd(p.hint, "reply");
       }
-      if (s.locked && !finished()) print(`map pin locked on L${s.pin!.layer}${s.named ? ` N${s.pin!.neuron}` : ""}; its score shows once you pick the neurons`, "dim echo");
+      if (s.locked && !finished()) print(`map pin locked on L${s.pin!.layer} ${neuronLabel(s.pin!.neuron, s.named)}; its score shows once you pick the neurons`, "dim echo");
       if (finished()) return summary();
       if (!s.named) {
         const items: MenuItem[] = s.choices.filter((q) => !s.wrong.includes(q)).map((q) => ({ label: option(q), run: () => guess(q) }));
