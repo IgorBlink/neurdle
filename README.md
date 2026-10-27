@@ -1,6 +1,11 @@
-<p align="center">
-  <img src="public/logo.svg" width="480" alt="neurdle">
-</p>
+```text
+███╗   ██╗███████╗██╗   ██╗██████╗ ██████╗ ██╗     ███████╗
+████╗  ██║██╔════╝██║   ██║██╔══██╗██╔══██╗██║     ██╔════╝
+██╔██╗ ██║█████╗  ██║   ██║██████╔╝██║  ██║██║     █████╗
+██║╚██╗██║██╔══╝  ██║   ██║██╔══██╗██║  ██║██║     ██╔══╝
+██║ ╚████║███████╗╚██████╔╝██║  ██║██████╔╝███████╗███████╗
+╚═╝  ╚═══╝╚══════╝ ╚═════╝ ╚═╝  ╚═╝╚═════╝ ╚══════╝╚══════╝
+```
 
 A guessing game about the inside of a language model. A few neurons in Qwen3.5-4B were changed, and then it answered a plain question. Name what was pushed, then find the neurons on a 3D map of the model.
 
